@@ -15,8 +15,8 @@ class TestTrie(unittest.TestCase):
         self.trie["Foo"] = True
         self.assertTrue(self.trie["Foo"])
         self.assertRaises(KeyError, self._square_brackets, "Food")
-        self.assertEquals(1, len(self.trie))
-        self.assertEquals(3, self.trie.nodeCount())
+        self.assertEqual(1, len(self.trie))
+        self.assertEqual(3, self.trie.nodeCount())
         self.assertTrue("Foo" in self.trie)
         self.trie["Bar"] = None
         self.assertTrue("Bar" in self.trie)
@@ -26,8 +26,8 @@ class TestTrie(unittest.TestCase):
         self.assertTrue(self.trie["Foo"])
         del self.trie["Foo"]
         self.assertRaises(KeyError, self._square_brackets, "Foo")
-        self.assertEquals(0, len(self.trie))
-        self.assertEquals(0, self.trie.nodeCount())
+        self.assertEqual(0, len(self.trie))
+        self.assertEqual(0, self.trie.nodeCount())
         self.assertFalse("Foo" in self.trie)
 
     def test_MixedTypes(self):
@@ -104,8 +104,8 @@ class TestTrie(unittest.TestCase):
         self.trie["Foo"] = True
         self.assertTrue(self.trie["Foo"])
         self.assertRaises(KeyError, self._square_brackets, "Food")
-        self.assertEquals("Bar", self.trie.get("Food", "Bar"))
-        self.assertEquals("Bar", self.trie.get("Food", default="Bar"))
+        self.assertEqual("Bar", self.trie.get("Food", "Bar"))
+        self.assertEqual("Bar", self.trie.get("Food", default="Bar"))
         self.assertTrue(self.trie.get("Foo"))
         self.assertTrue(self.trie.get("Food") is None)
 
@@ -121,7 +121,7 @@ class TestTrie(unittest.TestCase):
         self.assertTrue("Foo" in kset)
         self.assertTrue("Food" in kset)
         kset = self.trie.keys("Ox")
-        self.assertEquals(0, len(kset))
+        self.assertEqual(0, len(kset))
 
 
 if __name__ == '__main__':

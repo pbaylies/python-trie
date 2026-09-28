@@ -7,6 +7,10 @@ class Trie(object):
         self.value_valid = False
 
     def __setitem__(self, key, value):
+        if len(key) == 0:
+            self.value = value
+            self.value_valid = True
+            return
         head = key[0]
         if head in self.path:
             node = self.path[head]
@@ -22,6 +26,10 @@ class Trie(object):
             node.value_valid = True
 
     def __delitem__(self, key):
+        if len(key) == 0:
+            self.value_valid = False
+            self.value = None
+            return
         head = key[0]
         if head in self.path:
             node = self.path[head]
@@ -35,6 +43,10 @@ class Trie(object):
                 del self.path[head]
 
     def __getitem__(self, key):
+        if len(key) == 0:
+            if self.value_valid:
+                return self.value
+            raise KeyError(key)
         head = key[0]
         if head in self.path:
             node = self.path[head]
@@ -76,44 +88,36 @@ class Trie(object):
             n = n + 1 + self.path[k].nodeCount()
         return n
 
-    def keys(self, prefix=[]):
+    def keys(self, prefix=()):
         return self.__keys__(prefix)
 
-    def __keys__(self, prefix=[], seen=[]):
+    def __keys__(self, prefix=(), seen=()):
         result = []
         if self.value_valid:
-            isStr = True
-            val = ""
-            for k in seen:
-                if k is not str or len(k) > 2:
-                    isStr = False
-                    break
-                else:
-                    val += k
-            if isStr:
-                result.append(val)
-            else:
-                result.append(prefix)
+            result.append(self._reconstruct(seen))
         if len(prefix) > 0:
             head = prefix[0]
-            prefix = prefix[1:]
-            if head in self.path:
-                nextpaths = [head]
-            else:
-                nextpaths = []
+            remaining = prefix[1:]
+            children = [(head, self.path[head])] if head in self.path else []
         else:
-            nextpaths = self.path.keys()
-        for k in nextpaths:
-            nextseen = []
-            nextseen.extend(seen)
-            nextseen.append(k)
-            result.extend(self.path[k].__keys__(prefix, nextseen))
+            remaining = ()
+            children = list(self.path.items())
+        for k, child in children:
+            result.extend(child.__keys__(remaining, seen + (k,)))
         return result
+
+    @staticmethod
+    def _reconstruct(seen):
+        # Rebuild the original key from the elements collected along the path.
+        # A chain of single characters was a string; anything else is returned
+        # as-is (e.g. list/tuple keys).
+        if seen and all(isinstance(x, str) for x in seen):
+            return "".join(seen)
+        return list(seen)
 
     def __iter__(self):
         for k in self.keys():
             yield k
-        raise StopIteration
 
     def __add__(self, other):
         result = Trie()
