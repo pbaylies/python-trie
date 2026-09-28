@@ -109,9 +109,13 @@ class Trie(object):
     @staticmethod
     def _reconstruct(seen):
         # Rebuild the original key from the elements collected along the path.
-        # A chain of single characters was a string; anything else is returned
-        # as-is (e.g. list/tuple keys).
-        if seen and all(isinstance(x, str) for x in seen):
+        # The trie indexes *the sequence of elements*, not the container, so
+        # "Foo", ["F","o","o"], and ("F","o","o") all collapse to "Foo".
+        # Following Bill's historical len(k) <= 2 clue (commit be5e3e4): a key
+        # reconstructs as a string only when every element is a string of
+        # length at most two; anything else (multi-char chunks, ints, lists or
+        # tuples) is returned as a list rather than the old prefix-arg bug.
+        if seen and all(isinstance(x, str) and len(x) <= 2 for x in seen):
             return "".join(seen)
         return list(seen)
 

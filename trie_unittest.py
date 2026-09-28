@@ -123,6 +123,50 @@ class TestTrie(unittest.TestCase):
         kset = self.trie.keys("Ox")
         self.assertEqual(0, len(kset))
 
+    def test_EmptyKey(self):
+        # Both empty sequences terminate at the root; the trie indexes the
+        # sequence of elements and does not distinguish "" from ().
+        self.trie[""] = "empty-string"
+        self.assertEqual("empty-string", self.trie[""])
+        self.assertIn("", self.trie)
+
+        self.trie[()] = "empty-tuple"
+        self.assertEqual("empty-tuple", self.trie[()])
+        self.assertIn((), self.trie)
+
+        # Deleting the empty key removes it cleanly.
+        del self.trie[""]
+        self.assertNotIn("", self.trie)
+
+    def test_SequenceCollapse(self):
+        # A string and its list/tuple of characters are structurally identical.
+        t = Trie()
+        t["Foo"] = 1
+        self.assertEqual(1, t[("F", "o", "o")])
+        self.assertEqual(1, t[["F", "o", "o"]])
+        # ...and they all appear once (as the string) in keys().
+        keys = t.keys()
+        self.assertIn("Foo", keys)
+        self.assertNotIn(["F", "o", "o"], keys)
+
+    def test_MultiCharChunkReturnsList(self):
+        # With a len(k) <= 2 rule, elements longer than two chars do not
+        # reconstruct as a single string; they come back as a list. This is the
+        # historical behavior (commit be5e3e4) that my earlier "all strings"
+        # guess had silently broken: ["foo","bar"] must NOT become "foobar".
+        t = Trie()
+        t["foo", "bar"] = 1
+        keys = t.keys()
+        self.assertIn(["foo", "bar"], keys)
+        self.assertNotIn("foobar", keys)
+
+    def test_TwoCharChunkStillString(self):
+        # A two-char element counts as a str chunk (len <= 2), so the key
+        # reconstructs as a string.
+        t = Trie()
+        t["Fo", "o"] = 1
+        self.assertIn("Foo", t.keys())
+
 
 if __name__ == '__main__':
     unittest.main()
